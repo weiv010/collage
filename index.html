@@ -2,240 +2,233 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>A4 사진 콜라주</title>
 <style>
   :root{
-    --bg:#f4f5f7;
+    --bg:#eef0f4;
     --panel:#ffffff;
     --line:#e3e5ea;
     --text:#1c1e22;
     --muted:#6b7280;
     --accent:#2f6df6;
     --accent-soft:#e8f0ff;
+    --danger:#e0463c;
+    --safe-top:env(safe-area-inset-top,0px);
+    --safe-bottom:env(safe-area-inset-bottom,0px);
   }
-  *{box-sizing:border-box;}
-  html,body{margin:0;padding:0;}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;height:100%;overflow:hidden;}
   body{
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
     background:var(--bg);
     color:var(--text);
     display:flex;
-    min-height:100vh;
-  }
-
-  /* ---------- 사이드 패널 ---------- */
-  .sidebar{
-    width:300px;
-    flex:0 0 300px;
-    background:var(--panel);
-    border-right:1px solid var(--line);
-    padding:22px 20px;
-    display:flex;
     flex-direction:column;
-    gap:22px;
-    overflow-y:auto;
-    height:100vh;
-    position:sticky;
-    top:0;
+    height:100dvh;
+    max-width:640px;      /* 데스크톱에서도 모바일 폭으로 */
+    margin:0 auto;
+    box-shadow:0 0 40px rgba(0,0,0,.06);
+    background:var(--panel);
   }
-  .brand{font-size:19px;font-weight:700;letter-spacing:-.02em;}
-  .brand small{display:block;font-size:12px;font-weight:500;color:var(--muted);margin-top:4px;}
 
-  .group-title{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px;}
+  /* ---------- 상단바 ---------- */
+  .appbar{
+    flex:0 0 auto;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:calc(10px + var(--safe-top)) 14px 10px;
+    background:var(--panel);
+    border-bottom:1px solid var(--line);
+  }
+  .title{font-size:17px;font-weight:700;letter-spacing:-.02em;}
+  .print-btn{
+    display:inline-flex;align-items:center;gap:6px;
+    border:none;background:var(--accent);color:#fff;
+    font-size:14px;font-weight:600;
+    padding:9px 15px;border-radius:22px;cursor:pointer;
+  }
+  .print-btn:active{background:#255cd6;}
 
-  .tpl-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  /* ---------- 레이아웃 칩 ---------- */
+  .tpls{
+    flex:0 0 auto;
+    display:flex;gap:8px;
+    padding:10px 12px;
+    overflow-x:auto;
+    background:var(--panel);
+    border-bottom:1px solid var(--line);
+    -webkit-overflow-scrolling:touch;
+  }
+  .tpls::-webkit-scrollbar{display:none;}
   .tpl{
+    flex:0 0 auto;
+    display:flex;align-items:center;gap:9px;
     border:1.5px solid var(--line);
-    border-radius:10px;
-    background:#fff;
-    padding:10px 8px;
-    cursor:pointer;
-    text-align:center;
-    transition:.15s;
+    border-radius:12px;
+    background:#fff;padding:8px 12px 8px 10px;
+    cursor:pointer;white-space:nowrap;
   }
-  .tpl:hover{border-color:#b9c4da;}
   .tpl.active{border-color:var(--accent);background:var(--accent-soft);}
-  .tpl .preview{
-    margin:0 auto 8px;
-    background:#fff;
-    border:1px solid #cdd3de;
-    display:grid;
-    gap:2px;
-    padding:3px;
-  }
-  .tpl .preview span{background:#c7cfdd;border-radius:2px;}
-  .tpl.active .preview span{background:var(--accent);}
-  .tpl-label{font-size:12px;font-weight:600;}
-  .tpl-sub{font-size:10.5px;color:var(--muted);margin-top:2px;}
-
-  .btn{
-    width:100%;
-    border:none;
-    border-radius:9px;
-    padding:11px 14px;
-    font-size:14px;
-    font-weight:600;
-    cursor:pointer;
-    transition:.15s;
-  }
-  .btn-primary{background:var(--accent);color:#fff;}
-  .btn-primary:hover{background:#255cd6;}
-  .btn-ghost{background:#eef0f4;color:var(--text);}
-  .btn-ghost:hover{background:#e2e5ec;}
-  .btn-row{display:flex;gap:8px;}
-  .btn-row .btn{padding:10px;font-size:13px;}
-
-  .hint{font-size:12px;line-height:1.6;color:var(--muted);}
-  .hint b{color:var(--text);}
-
-  .spacer{flex:1;}
-
-  /* ---------- 편집 컨트롤 ---------- */
-  .controls{
-    border:1px solid var(--line);
-    border-radius:10px;
-    padding:14px;
-    background:#fafbfc;
-    display:none;
-  }
-  .controls.show{display:block;}
-  .controls h4{margin:0 0 12px;font-size:13px;}
-  .ctrl-row{margin-bottom:12px;}
-  .ctrl-row label{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:5px;}
-  .ctrl-row input[type=range]{width:100%;accent-color:var(--accent);}
-  .mini-row{display:flex;gap:6px;margin-top:4px;}
-  .mini-btn{
-    flex:1;border:1px solid var(--line);background:#fff;border-radius:7px;
-    padding:7px;font-size:12px;cursor:pointer;font-weight:600;
-  }
-  .mini-btn:hover{background:#f0f2f6;}
-  .mini-btn.danger{color:#d63b3b;border-color:#f0c4c4;}
+  .tpl .prev{display:grid;gap:1.5px;padding:2px;border:1px solid #c3cad6;border-radius:3px;background:#fff;}
+  .tpl .prev span{background:#c3cbd8;border-radius:1px;}
+  .tpl.active .prev span{background:var(--accent);}
+  .tpl b{font-size:13.5px;font-weight:600;}
+  .tpl small{display:block;font-size:11px;color:var(--muted);font-weight:500;margin-top:1px;}
 
   /* ---------- 작업 영역 ---------- */
   .stage{
-    flex:1;
-    display:flex;
-    align-items:flex-start;
-    justify-content:center;
-    padding:40px;
-    overflow:auto;
-    height:100vh;
-  }
-  .sheet-wrap{
-    display:inline-block;
-    box-shadow:0 10px 40px rgba(20,30,60,.18);
-  }
-  .sheet{
-    background:#fff;
-    display:grid;
-    gap:0;
+    flex:1 1 auto;
+    position:relative;
+    display:flex;align-items:center;justify-content:center;
+    padding:14px;
+    background:var(--bg);
     overflow:hidden;
   }
-  /* 화면상 A4 크기(mm) */
+  .sheet-box{position:relative;}
+  .sheet-wrap{
+    position:absolute;top:0;left:0;
+    transform-origin:top left;
+    box-shadow:0 8px 30px rgba(20,30,60,.20);
+  }
+  .sheet{background:#fff;display:grid;gap:0;overflow:hidden;}
   .sheet.portrait{width:210mm;height:297mm;}
   .sheet.landscape{width:297mm;height:210mm;}
 
   .cell{
-    position:relative;
-    overflow:hidden;
-    background:#eef0f3;
-    cursor:pointer;
+    position:relative;overflow:hidden;background:#e7eaf0;
+    cursor:pointer;touch-action:none;
   }
-  .cell.selected{outline:2px solid var(--accent);outline-offset:-2px;z-index:2;}
+  .cell.selected{outline:3px solid var(--accent);outline-offset:-3px;z-index:2;}
   .cell .frame{
-    position:absolute;
-    top:50%;left:50%;
-    width:100%;height:100%;
-    transform-origin:center center;
-    will-change:transform;
+    position:absolute;top:50%;left:50%;width:100%;height:100%;
+    transform-origin:center center;will-change:transform;
   }
   .cell img{
-    width:100%;height:100%;
-    object-fit:cover;
-    display:block;
-    -webkit-user-drag:none;
-    user-select:none;
-    pointer-events:none;
+    width:100%;height:100%;object-fit:cover;display:block;
+    -webkit-user-drag:none;user-select:none;pointer-events:none;
   }
-  .cell.has-img{cursor:grab;background:#fff;}
-  .cell.has-img.dragging{cursor:grabbing;}
+  .cell.has-img{background:#fff;}
   .placeholder{
-    position:absolute;inset:0;
-    display:flex;flex-direction:column;
-    align-items:center;justify-content:center;
-    gap:8px;color:#9aa2b1;pointer-events:none;
+    position:absolute;inset:0;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:6px;color:#9aa2b1;pointer-events:none;
   }
-  .placeholder svg{width:34px;height:34px;opacity:.7;}
-  .placeholder span{font-size:13px;font-weight:600;}
+  .placeholder svg{width:min(9vw,40px);height:min(9vw,40px);opacity:.7;}
+  .placeholder span{font-size:min(3.6vw,14px);font-weight:600;}
   .cell.has-img .placeholder{display:none;}
+
+  /* ---------- 하단 기본 액션 ---------- */
+  .footer{
+    flex:0 0 auto;
+    padding:12px 14px calc(12px + var(--safe-bottom));
+    background:var(--panel);
+    border-top:1px solid var(--line);
+    display:flex;flex-direction:column;gap:8px;
+  }
+  .fill-btn{
+    width:100%;border:none;border-radius:13px;
+    background:#eef0f4;color:var(--text);
+    font-size:15px;font-weight:600;padding:14px;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;gap:8px;
+  }
+  .fill-btn:active{background:#e2e5ec;}
+  .foot-hint{font-size:12px;color:var(--muted);text-align:center;line-height:1.5;}
+
+  /* ---------- 편집 바텀시트 ---------- */
+  .editor{
+    position:fixed;left:50%;bottom:0;transform:translate(-50%,100%);
+    width:100%;max-width:640px;
+    background:var(--panel);
+    border-top:1px solid var(--line);
+    border-radius:18px 18px 0 0;
+    box-shadow:0 -8px 30px rgba(0,0,0,.12);
+    padding:8px 18px calc(16px + var(--safe-bottom));
+    transition:transform .22s cubic-bezier(.4,0,.2,1);
+    z-index:50;
+  }
+  .editor.show{transform:translate(-50%,0);}
+  .grip{width:38px;height:4px;border-radius:2px;background:#d4d8e0;margin:6px auto 12px;}
+  .ed-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+  .ed-head h4{margin:0;font-size:15px;}
+  .done-btn{border:none;background:var(--accent);color:#fff;font-size:14px;font-weight:600;
+    padding:8px 16px;border-radius:20px;cursor:pointer;}
+
+  .row{margin-bottom:16px;}
+  .row .lbl{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);margin-bottom:8px;}
+  input[type=range]{
+    width:100%;height:30px;accent-color:var(--accent);margin:0;
+  }
+  .seg{display:flex;gap:8px;margin-top:10px;}
+  .seg button{
+    flex:1;border:1px solid var(--line);background:#fff;border-radius:11px;
+    padding:12px;font-size:14px;font-weight:600;cursor:pointer;color:var(--text);
+  }
+  .seg button:active{background:#f0f2f6;}
+  .seg button.danger{color:var(--danger);border-color:#f2c9c5;}
 
   /* ---------- 인쇄 ---------- */
   @media print{
-    .sidebar{display:none !important;}
-    body{background:#fff;display:block;}
-    .stage{padding:0;overflow:visible;height:auto;display:block;}
-    .sheet-wrap{box-shadow:none;display:block;}
+    html,body{height:auto;overflow:visible;max-width:none;box-shadow:none;display:block;}
+    .appbar,.tpls,.footer,.editor{display:none !important;}
+    .stage{padding:0;overflow:visible;display:block;background:#fff;}
+    .sheet-box{width:auto !important;height:auto !important;}
+    .sheet-wrap{position:static;transform:none !important;box-shadow:none;}
     .cell{outline:none !important;background:#fff;}
     .cell .placeholder{display:none !important;}
   }
 </style>
 </head>
 <body>
-  <aside class="sidebar">
-    <div class="brand">A4 사진 콜라주<small>사진을 넣고 확대·회전해 인쇄하세요</small></div>
+  <header class="appbar">
+    <div class="title">A4 사진 콜라주</div>
+    <button class="print-btn" id="printBtn">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+      인쇄
+    </button>
+  </header>
 
-    <div>
-      <div class="group-title">레이아웃</div>
-      <div class="tpl-grid" id="tplGrid"></div>
-    </div>
+  <nav class="tpls" id="tplGrid"></nav>
 
-    <div id="controls" class="controls">
-      <h4>선택한 칸 편집</h4>
-      <div class="ctrl-row">
-        <label>확대/축소 <span id="zoomVal">100%</span></label>
-        <input type="range" id="zoom" min="1" max="5" step="0.01" value="1">
+  <main class="stage" id="stage">
+    <div class="sheet-box" id="sheetBox">
+      <div class="sheet-wrap" id="sheetWrap">
+        <div class="sheet portrait" id="sheet"></div>
       </div>
-      <div class="ctrl-row">
-        <label>회전 <span id="rotVal">0°</span></label>
-        <input type="range" id="rot" min="-180" max="180" step="1" value="0">
-        <div class="mini-row">
-          <button class="mini-btn" data-rot="-90">⟲ 90°</button>
-          <button class="mini-btn" data-rot="90">⟳ 90°</button>
-        </div>
-      </div>
-      <div class="mini-row">
-        <button class="mini-btn" id="changeImg">사진 교체</button>
-        <button class="mini-btn" id="resetImg">맞춤</button>
-        <button class="mini-btn danger" id="removeImg">삭제</button>
-      </div>
-    </div>
-
-    <div>
-      <div class="group-title">사진</div>
-      <div class="btn-row">
-        <button class="btn btn-ghost" id="addAll">빈 칸 채우기</button>
-      </div>
-    </div>
-
-    <p class="hint">
-      <b>사용법</b><br>
-      · 칸을 클릭해 사진을 넣습니다.<br>
-      · 사진을 <b>드래그</b>하면 이동합니다.<br>
-      · <b>마우스 휠</b>로 확대/축소합니다.<br>
-      · 슬라이더로 확대·회전을 조절합니다.
-    </p>
-
-    <div class="spacer"></div>
-
-    <button class="btn btn-primary" id="printBtn">인쇄 / PDF 저장</button>
-  </aside>
-
-  <main class="stage">
-    <div class="sheet-wrap">
-      <div class="sheet portrait" id="sheet"></div>
     </div>
   </main>
+
+  <footer class="footer">
+    <button class="fill-btn" id="addAll">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+      빈 칸에 사진 채우기
+    </button>
+    <div class="foot-hint">빈 칸을 눌러 사진 넣기 · 손가락으로 이동 · 두 손가락으로 확대·회전</div>
+  </footer>
+
+  <!-- 편집 바텀시트 -->
+  <section class="editor" id="editor">
+    <div class="grip"></div>
+    <div class="ed-head">
+      <h4>사진 편집</h4>
+      <button class="done-btn" id="doneBtn">완료</button>
+    </div>
+    <div class="row">
+      <div class="lbl"><span>확대 / 축소</span><span id="zoomVal">100%</span></div>
+      <input type="range" id="zoom" min="1" max="6" step="0.01" value="1">
+    </div>
+    <div class="row">
+      <div class="lbl"><span>회전</span><span id="rotVal">0°</span></div>
+      <input type="range" id="rot" min="-180" max="180" step="1" value="0">
+      <div class="seg">
+        <button data-rot="-90">⟲ 90° 왼쪽</button>
+        <button data-rot="90">오른쪽 90° ⟳</button>
+      </div>
+    </div>
+    <div class="seg">
+      <button id="changeImg">사진 교체</button>
+      <button id="resetImg">맞춤</button>
+      <button id="removeImg" class="danger">삭제</button>
+    </div>
+  </section>
 
   <input type="file" id="fileInput" accept="image/*" style="display:none">
   <input type="file" id="fileInputMulti" accept="image/*" multiple style="display:none">
@@ -250,21 +243,29 @@
     landscape3: {orient:"landscape", rows:1, cols:3, label:"가로 3칸", sub:"옆으로 3등분"},
   };
 
-  const sheet   = document.getElementById("sheet");
-  const tplGrid = document.getElementById("tplGrid");
+  const sheet    = document.getElementById("sheet");
+  const sheetBox = document.getElementById("sheetBox");
+  const sheetWrap= document.getElementById("sheetWrap");
+  const stage    = document.getElementById("stage");
+  const tplGrid  = document.getElementById("tplGrid");
   const fileInput      = document.getElementById("fileInput");
   const fileInputMulti = document.getElementById("fileInputMulti");
-  const controls = document.getElementById("controls");
+  const editor  = document.getElementById("editor");
   const zoom = document.getElementById("zoom");
   const rot  = document.getElementById("rot");
   const zoomVal = document.getElementById("zoomVal");
   const rotVal  = document.getElementById("rotVal");
 
   let currentTpl = "portrait2";
-  let cells = [];        // { el, frame, img, state } 배열
-  let selected = -1;     // 선택된 칸 index
+  let cells = [];
+  let selected = -1;
+  let viewScale = 1;   // 화면 표시용 축소 배율
 
-  // ---------- 레이아웃 미리보기 썸네일 ----------
+  const clamp = (v,min,max)=>Math.max(min,Math.min(max,v));
+  const dist  = (a,b)=>Math.hypot(a.x-b.x, a.y-b.y);
+  const angle = (a,b)=>Math.atan2(b.y-a.y, b.x-a.x)*180/Math.PI;
+
+  // ---------- 레이아웃 칩 ----------
   function buildTemplateButtons(){
     Object.keys(TEMPLATES).forEach(key=>{
       const t = TEMPLATES[key];
@@ -272,23 +273,18 @@
       el.className = "tpl" + (key===currentTpl?" active":"");
       el.dataset.key = key;
 
-      const isPortrait = t.orient==="portrait";
-      const pw = isPortrait ? 34 : 48;
-      const ph = isPortrait ? 48 : 34;
-      const preview = document.createElement("div");
-      preview.className = "preview";
-      preview.style.width = pw+"px";
-      preview.style.height = ph+"px";
-      preview.style.gridTemplateColumns = "repeat("+t.cols+",1fr)";
-      preview.style.gridTemplateRows = "repeat("+t.rows+",1fr)";
-      for(let i=0;i<t.rows*t.cols;i++) preview.appendChild(document.createElement("span"));
+      const isP = t.orient==="portrait";
+      const prev = document.createElement("div");
+      prev.className="prev";
+      prev.style.width  = (isP?20:30)+"px";
+      prev.style.height = (isP?30:22)+"px";
+      prev.style.gridTemplateColumns = "repeat("+t.cols+",1fr)";
+      prev.style.gridTemplateRows = "repeat("+t.rows+",1fr)";
+      for(let i=0;i<t.rows*t.cols;i++) prev.appendChild(document.createElement("span"));
 
-      const lbl = document.createElement("div");
-      lbl.className="tpl-label"; lbl.textContent=t.label;
-      const sub = document.createElement("div");
-      sub.className="tpl-sub"; sub.textContent=t.sub;
-
-      el.append(preview,lbl,sub);
+      const txt=document.createElement("div");
+      txt.innerHTML = "<b>"+t.label+"</b><small>"+t.sub+"</small>";
+      el.append(prev,txt);
       el.addEventListener("click",()=>setTemplate(key));
       tplGrid.appendChild(el);
     });
@@ -300,7 +296,7 @@
     buildSheet();
   }
 
-  // ---------- 시트(칸) 생성 ----------
+  // ---------- 시트/칸 생성 ----------
   function buildSheet(){
     const t = TEMPLATES[currentTpl];
     sheet.className = "sheet " + t.orient;
@@ -309,34 +305,45 @@
     sheet.innerHTML = "";
     cells = [];
     selected = -1;
-    hideControls();
+    closeEditor();
 
-    const count = t.rows*t.cols;
-    for(let i=0;i<count;i++){
+    for(let i=0;i<t.rows*t.cols;i++){
       const cell = document.createElement("div");
       cell.className = "cell";
-      cell.dataset.index = i;
-
       const frame = document.createElement("div");
       frame.className = "frame";
       const img = document.createElement("img");
       frame.appendChild(img);
-
       const ph = document.createElement("div");
       ph.className = "placeholder";
       ph.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 15l5-4 4 3 3-2 6 5"/><circle cx="8" cy="9" r="1.4"/></svg><span>사진 추가</span>';
-
       cell.append(frame, ph);
       sheet.appendChild(cell);
 
-      const record = {
-        el:cell, frame, img,
-        state:{ x:0, y:0, scale:1, rot:0, src:null }
-      };
-      cells.push(record);
-      attachCellEvents(record, i);
+      const rec = { el:cell, frame, img, ptrs:new Map(), base:null, moved:false,
+                    state:{ x:0, y:0, scale:1, rot:0, src:null } };
+      cells.push(rec);
+      attachCellEvents(rec, i);
     }
+    resizeSheet();
   }
+
+  // ---------- 화면 맞춤 축소 ----------
+  function resizeSheet(){
+    const natW = sheet.offsetWidth, natH = sheet.offsetHeight;
+    if(!natW || !natH) return;
+    const cs = getComputedStyle(stage);
+    const padX = parseFloat(cs.paddingLeft)+parseFloat(cs.paddingRight);
+    const padY = parseFloat(cs.paddingTop)+parseFloat(cs.paddingBottom);
+    const availW = stage.clientWidth  - padX;
+    const availH = stage.clientHeight - padY;
+    viewScale = Math.min(availW/natW, availH/natH, 1);
+    sheetWrap.style.transform = "scale("+viewScale+")";
+    sheetBox.style.width  = (natW*viewScale)+"px";
+    sheetBox.style.height = (natH*viewScale)+"px";
+  }
+  window.addEventListener("resize", resizeSheet);
+  window.addEventListener("orientationchange", ()=>setTimeout(resizeSheet,200));
 
   // ---------- 변환 적용 ----------
   function applyTransform(rec){
@@ -345,179 +352,184 @@
       `translate(calc(-50% + ${s.x}px), calc(-50% + ${s.y}px)) rotate(${s.rot}deg) scale(${s.scale})`;
   }
 
-  // ---------- 칸 이벤트(드래그/휠/선택) ----------
+  // ---------- 제스처(터치/마우스) ----------
+  function recomputeBase(rec){
+    const pts=[...rec.ptrs.values()];
+    const b={ scale:rec.state.scale, rot:rec.state.rot, x:rec.state.x, y:rec.state.y };
+    if(pts.length===1){ b.px=pts[0].x; b.py=pts[0].y; }
+    else if(pts.length>=2){
+      b.dist=dist(pts[0],pts[1]) || 1;
+      b.angle=angle(pts[0],pts[1]);
+      b.cx=(pts[0].x+pts[1].x)/2; b.cy=(pts[0].y+pts[1].y)/2;
+    }
+    rec.base=b;
+  }
+
   function attachCellEvents(rec, index){
     const cell = rec.el;
 
-    cell.addEventListener("click",(e)=>{
-      // 드래그 후 클릭 방지
-      if(cell._moved) { cell._moved=false; return; }
-      selectCell(index);
-      if(!rec.state.src){
-        openFilePicker(index);
-      }
-    });
-
-    // 드래그로 이동
-    let dragging=false, sx=0, sy=0, ox=0, oy=0;
     cell.addEventListener("pointerdown",(e)=>{
+      selectCell(index);
       if(!rec.state.src) return;
-      dragging=true; cell._moved=false;
-      sx=e.clientX; sy=e.clientY;
-      ox=rec.state.x; oy=rec.state.y;
-      cell.classList.add("dragging");
       cell.setPointerCapture(e.pointerId);
+      rec.ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
+      rec.moved=false;
+      recomputeBase(rec);
     });
-    cell.addEventListener("pointermove",(e)=>{
-      if(!dragging) return;
-      const dx=e.clientX-sx, dy=e.clientY-sy;
-      if(Math.abs(dx)>3||Math.abs(dy)>3) cell._moved=true;
-      rec.state.x = ox+dx;
-      rec.state.y = oy+dy;
-      applyTransform(rec);
-    });
-    const endDrag=(e)=>{
-      if(!dragging) return;
-      dragging=false;
-      cell.classList.remove("dragging");
-    };
-    cell.addEventListener("pointerup",endDrag);
-    cell.addEventListener("pointercancel",endDrag);
 
-    // 휠로 확대/축소
+    cell.addEventListener("pointermove",(e)=>{
+      if(!rec.ptrs.has(e.pointerId)) return;
+      rec.ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
+      const pts=[...rec.ptrs.values()];
+      const b=rec.base;
+      if(pts.length===1){
+        const dx=(pts[0].x-b.px)/viewScale, dy=(pts[0].y-b.py)/viewScale;
+        if(Math.abs(dx)>2||Math.abs(dy)>2) rec.moved=true;
+        rec.state.x=b.x+dx; rec.state.y=b.y+dy;
+      } else if(pts.length>=2){
+        rec.moved=true;
+        const d=dist(pts[0],pts[1]), a=angle(pts[0],pts[1]);
+        const cx=(pts[0].x+pts[1].x)/2, cy=(pts[0].y+pts[1].y)/2;
+        rec.state.scale=clamp(b.scale*(d/b.dist),1,8);
+        rec.state.rot=b.rot+(a-b.angle);
+        rec.state.x=b.x+(cx-b.cx)/viewScale;
+        rec.state.y=b.y+(cy-b.cy)/viewScale;
+      }
+      applyTransform(rec);
+      syncControls();
+    });
+
+    const up=(e)=>{
+      if(!rec.ptrs.has(e.pointerId)) return;
+      rec.ptrs.delete(e.pointerId);
+      if(rec.ptrs.size>0) recomputeBase(rec);
+    };
+    cell.addEventListener("pointerup",up);
+    cell.addEventListener("pointercancel",up);
+
+    // 빈 칸 탭 → 사진 선택 (이동 없이 탭한 경우만)
+    cell.addEventListener("click",()=>{
+      if(rec.moved){ rec.moved=false; return; }
+      selectCell(index);
+      if(!rec.state.src) openFilePicker(index);
+    });
+
+    // 데스크톱: 휠 확대/축소
     cell.addEventListener("wheel",(e)=>{
       if(!rec.state.src) return;
       e.preventDefault();
       selectCell(index);
-      const delta = e.deltaY<0 ? 1.08 : 1/1.08;
-      rec.state.scale = clamp(rec.state.scale*delta, 1, 8);
-      applyTransform(rec);
-      syncControls();
+      rec.state.scale=clamp(rec.state.scale*(e.deltaY<0?1.08:1/1.08),1,8);
+      applyTransform(rec); syncControls();
     },{passive:false});
   }
 
-  function clamp(v,min,max){return Math.max(min,Math.min(max,v));}
-
-  // ---------- 선택 ----------
+  // ---------- 선택 / 편집 시트 ----------
   function selectCell(index){
     selected = index;
     cells.forEach((c,i)=>c.el.classList.toggle("selected", i===index));
-    if(cells[index].state.src){ showControls(); syncControls(); }
-    else hideControls();
+    if(cells[index].state.src){ openEditor(); syncControls(); }
+    else closeEditor();
   }
-  function showControls(){controls.classList.add("show");}
-  function hideControls(){controls.classList.remove("show");}
-
+  function openEditor(){
+    editor.classList.add("show");
+    // 바텀시트가 미리보기를 가리지 않도록 여백 확보 후 재축소
+    requestAnimationFrame(()=>{
+      const footH = document.querySelector(".footer").offsetHeight;
+      const overlap = Math.max(0, editor.offsetHeight - footH);
+      stage.style.paddingBottom = (14 + overlap) + "px";
+      resizeSheet();
+    });
+  }
+  function closeEditor(){
+    editor.classList.remove("show");
+    stage.style.paddingBottom = "";
+    resizeSheet();
+    cells.forEach(c=>c.el.classList.remove("selected"));
+    selected=-1;
+  }
   function syncControls(){
     if(selected<0) return;
     const s = cells[selected].state;
-    zoom.value = s.scale;
-    rot.value  = s.rot;
-    zoomVal.textContent = Math.round(s.scale*100)+"%";
-    rotVal.textContent  = Math.round(s.rot)+"°";
+    zoom.value=s.scale; rot.value=s.rot;
+    zoomVal.textContent=Math.round(s.scale*100)+"%";
+    rotVal.textContent =Math.round(s.rot)+"°";
   }
 
-  // ---------- 파일 선택 ----------
-  let pickTarget = -1;
-  function openFilePicker(index){
-    pickTarget = index;
-    fileInput.value = "";
-    fileInput.click();
-  }
+  // ---------- 파일 ----------
+  let pickTarget=-1;
+  function openFilePicker(index){ pickTarget=index; fileInput.value=""; fileInput.click(); }
   fileInput.addEventListener("change",()=>{
-    const f = fileInput.files[0];
-    if(!f || pickTarget<0) return;
-    loadImageToCell(pickTarget, f);
+    const f=fileInput.files[0];
+    if(f && pickTarget>=0) loadImageToCell(pickTarget,f);
   });
-
-  function loadImageToCell(index, file){
-    const rec = cells[index];
-    const url = URL.createObjectURL(file);
-    rec.img.onload = ()=>{
+  function loadImageToCell(index,file){
+    const rec=cells[index];
+    const url=URL.createObjectURL(file);
+    rec.img.onload=()=>{
       rec.el.classList.add("has-img");
-      rec.state = { x:0, y:0, scale:1, rot:0, src:url };
+      rec.state={x:0,y:0,scale:1,rot:0,src:url};
       applyTransform(rec);
       selectCell(index);
-      URL.revokeObjectURL(url); // img가 이미 디코드됨
     };
-    rec.img.src = url;
+    rec.img.src=url;
   }
 
-  // ---------- 빈 칸 일괄 채우기 ----------
-  document.getElementById("addAll").addEventListener("click",()=>{
-    fileInputMulti.value="";
-    fileInputMulti.click();
-  });
+  document.getElementById("addAll").addEventListener("click",()=>{ fileInputMulti.value=""; fileInputMulti.click(); });
   fileInputMulti.addEventListener("change",()=>{
-    const files = Array.from(fileInputMulti.files);
-    let fi = 0;
+    const files=Array.from(fileInputMulti.files); let fi=0;
     for(let i=0;i<cells.length && fi<files.length;i++){
-      if(!cells[i].state.src){
-        loadImageToCell(i, files[fi]);
-        fi++;
-      }
+      if(!cells[i].state.src){ loadImageToCell(i,files[fi]); fi++; }
     }
   });
 
-  // ---------- 컨트롤 바인딩 ----------
+  // ---------- 컨트롤 ----------
   zoom.addEventListener("input",()=>{
     if(selected<0) return;
-    cells[selected].state.scale = parseFloat(zoom.value);
+    cells[selected].state.scale=parseFloat(zoom.value);
     applyTransform(cells[selected]);
-    zoomVal.textContent = Math.round(zoom.value*100)+"%";
+    zoomVal.textContent=Math.round(zoom.value*100)+"%";
   });
   rot.addEventListener("input",()=>{
     if(selected<0) return;
-    cells[selected].state.rot = parseFloat(rot.value);
+    cells[selected].state.rot=parseFloat(rot.value);
     applyTransform(cells[selected]);
-    rotVal.textContent = Math.round(rot.value)+"°";
+    rotVal.textContent=Math.round(rot.value)+"°";
   });
   document.querySelectorAll("[data-rot]").forEach(b=>{
     b.addEventListener("click",()=>{
       if(selected<0) return;
-      let r = cells[selected].state.rot + parseInt(b.dataset.rot,10);
-      while(r>180) r-=360; while(r<-180) r+=360;
-      cells[selected].state.rot = r;
-      applyTransform(cells[selected]);
-      syncControls();
+      let r=cells[selected].state.rot+parseInt(b.dataset.rot,10);
+      while(r>180)r-=360; while(r<-180)r+=360;
+      cells[selected].state.rot=r;
+      applyTransform(cells[selected]); syncControls();
     });
   });
-  document.getElementById("changeImg").addEventListener("click",()=>{
-    if(selected<0) return; openFilePicker(selected);
-  });
+  document.getElementById("changeImg").addEventListener("click",()=>{ if(selected>=0) openFilePicker(selected); });
   document.getElementById("resetImg").addEventListener("click",()=>{
     if(selected<0) return;
-    const rec = cells[selected];
-    rec.state.x=0; rec.state.y=0; rec.state.scale=1; rec.state.rot=0;
+    const rec=cells[selected];
+    rec.state.x=0;rec.state.y=0;rec.state.scale=1;rec.state.rot=0;
     applyTransform(rec); syncControls();
   });
   document.getElementById("removeImg").addEventListener("click",()=>{
     if(selected<0) return;
-    const rec = cells[selected];
+    const rec=cells[selected];
     rec.img.removeAttribute("src");
     rec.el.classList.remove("has-img");
-    rec.state = { x:0, y:0, scale:1, rot:0, src:null };
+    rec.state={x:0,y:0,scale:1,rot:0,src:null};
     rec.frame.style.transform="";
-    hideControls();
-    cells.forEach(c=>c.el.classList.remove("selected"));
-    selected=-1;
+    closeEditor();
   });
+  document.getElementById("doneBtn").addEventListener("click",closeEditor);
 
   // ---------- 인쇄 ----------
-  const printStyle = document.createElement("style");
+  const printStyle=document.createElement("style");
   document.head.appendChild(printStyle);
   document.getElementById("printBtn").addEventListener("click",()=>{
-    const orient = TEMPLATES[currentTpl].orient;
-    printStyle.textContent = `@page{ size:A4 ${orient}; margin:0; }`;
-    window.print();
-  });
-
-  // 배경(빈 곳) 클릭 시 선택 해제
-  document.querySelector(".stage").addEventListener("pointerdown",(e)=>{
-    if(e.target.classList.contains("stage") || e.target.classList.contains("sheet-wrap")){
-      cells.forEach(c=>c.el.classList.remove("selected"));
-      selected=-1; hideControls();
-    }
+    closeEditor();
+    printStyle.textContent=`@page{ size:A4 ${TEMPLATES[currentTpl].orient}; margin:0; }`;
+    setTimeout(()=>window.print(),80);
   });
 
   // ---------- 초기화 ----------
